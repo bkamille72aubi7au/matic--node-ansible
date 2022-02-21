@@ -1,0 +1,52 @@
+---
+# tasks file for install_dependencies
+
+- name: Run the equivalent of "apt-get update" as a separate step
+  apt:
+    update_cache: yes
+  become: true
+
+- name: Install build-essential
+  action: apt pkg=build-essential
+  become: true
+
+- name: Remove old go bin directory
+  file:
+    path: "{{ ansible_env.HOME }}/.go"
+    state: absent
+
+- name: Download go installer
+  get_url:
+    url: https://gist.githubusercontent.com/ssandeep/a6c7197811c83c71e5fead841bab396c/raw/5866fbd95fe3d9eae7bae08a842240d2edbe489e/go-install.sh
+    dest: "{{ ansible_env.HOME }}/go-install.sh"
+
+- name: Execute the go-install.sh
+  command: "bash go-install.sh"
+  args:
+    chdir: "{{ ansible_env.HOME }}"
+
+- name: Remove the go-install.sh
+  file:
+    path: "{{ ansible_env.HOME }}/go-install.sh"
+    state: absent
+
+- name: Creating symlink for golang
+  file:
+    src: "{{ ansible_env.HOME }}/.go/bin/go"
+    dest: "/usr/bin/go"
+    state: link
+  become: true
+
+- name: Install jq
+  action: apt pkg=jq
+  become: true
+  
+- name: Install git
+  action: apt pkg=git
+  become: true
+
+- name: Install rabbitmq-server
+  apt:
+    name: rabbitmq-server
+    state: present
+  become: true
